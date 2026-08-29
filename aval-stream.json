@@ -1,0 +1,11 @@
+﻿{
+  "model": "claude-sonnet-4-6",
+  "messages": [
+    {
+      "role": "user",
+      "content": "فقط کلمه موفق را بنویس."
+    }
+  ],
+  "max_tokens": 50,
+  "stream": true
+}

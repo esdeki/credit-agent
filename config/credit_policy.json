@@ -1,0 +1,5 @@
+{
+    "current_ratio_min": 1.5,
+    "debt_ratio_max": 0.6,
+    "quick_ratio_min": 1.0
+}

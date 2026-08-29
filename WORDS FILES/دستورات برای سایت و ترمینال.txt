@@ -1,0 +1,5 @@
+ترمینال:
+python app.py
+
+برنامه Streamlit:
+streamlit run app.py
