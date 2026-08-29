@@ -11,7 +11,7 @@ class KnowledgeManager:
             knowledge_path = Path(__file__).parent.parent / "knowledge"
         self.knowledge_path = Path(knowledge_path)
 
-    def get_relevant_documents(self, query):
+    def get_relevant_documents(self, query, company_name=None):
         """
         Retrieve documents whose content matches keywords from the query.
 
@@ -32,12 +32,21 @@ class KnowledgeManager:
             if len(word) > 1
         ]
 
+        normalized_company = None
+        if company_name:
+            normalized_company = company_name.strip().lower()
+
         for file in self.knowledge_path.glob("*.txt"):
 
             with open(file, "r", encoding="utf-8") as f:
                 content = f.read()
 
-            if any(word in content.lower() for word in query_words):
+            content_lower = content.lower()
+
+            if normalized_company and normalized_company not in content_lower:
+                continue
+
+            if any(word in content_lower for word in query_words):
                 documents.append({
                     "source": file.name,
                     "content": content

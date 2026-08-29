@@ -118,11 +118,6 @@ class ToolManager:
             tools.get_company_memory_tool
         )
 
-        self.register_tool(
-            "generate_credit_answer",
-            tools.generate_credit_report_tool
-        )
-
     # --------------------------------------------------
     # Execute Tool
     # --------------------------------------------------

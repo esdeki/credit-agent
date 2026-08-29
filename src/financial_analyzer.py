@@ -1,12 +1,51 @@
-def analyze_company(company_data):
-    """
-    Analyze the financial ratios of a company.
-    """
+import pandas as pd
 
-    analysis = {
-        "Current_Ratio_Average": company_data["Current_Ratio"].mean(),
-        "Quick_Ratio_Average": company_data["Quick_Ratio"].mean(),
-        "Debt_Ratio_Average": company_data["Debt_Ratio"].mean(),
+
+NON_PERIOD_MARKERS = (
+    "درصد تغيير",
+    "درصد تغییر",
+    "درصد تغييرات",
+    "درصد تغییرات",
+    "میانگین",
+    "ميانگين",
+    "جمع",
+    "total",
+    "average",
+)
+
+
+def _is_valid_period(label):
+    if not isinstance(label, str):
+        return False
+    normalized = " ".join(label.split()).strip().lower()
+    if not normalized:
+        return False
+    return not any(marker in normalized for marker in NON_PERIOD_MARKERS)
+
+
+def _safe_mean(series):
+    numeric = pd.to_numeric(series, errors="coerce")
+    filtered = numeric.dropna()
+    if filtered.empty:
+        return None
+    return filtered.mean()
+
+
+def analyze_company(company_data):
+    """Analyse financial ratios using only valid period rows."""
+
+    if company_data is None or company_data.empty:
+        return {}
+
+    if "Period_Date" in company_data.columns:
+        filtered = company_data[company_data["Period_Date"].apply(_is_valid_period)]
+    else:
+        filtered = company_data.copy()
+
+    ratios = {
+        "Current_Ratio_Average": _safe_mean(filtered.get("Current_Ratio")),
+        "Quick_Ratio_Average": _safe_mean(filtered.get("Quick_Ratio")),
+        "Debt_Ratio_Average": _safe_mean(filtered.get("Debt_Ratio")),
     }
 
-    return analysis
+    return {k: v for k, v in ratios.items() if v is not None}

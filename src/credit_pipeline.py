@@ -6,8 +6,6 @@ from src.credit_agent import create_credit_report
 from src.conversation_manager import ConversationManager
 from src.memory_manager import MemoryManager
 
-import json
-
 
 # ==================================================
 # Reusable Business Logic Steps
@@ -32,11 +30,28 @@ def check_credit_rules(review_financial_analysis):
 
 def evaluate_risk(check_credit_rules):
     """
-    ارزیابی ریسک بر اساس نتیجه‌ی قوانین.
-    (در این نسخه، ارزیابی ریسک در دل قوانین اعتباری لحاظ شده
-    و این تابع آن را به‌صورت شفاف عبور می‌دهد.)
+    ارزیابی ریسک بر اساس نتایج موتور قواعد اعتباری.
+    خروجی استاندارد با میدان risk_level فراهم می‌کند.
     """
-    return check_credit_rules
+
+    risk_level = "Unknown"
+
+    if isinstance(check_credit_rules, dict) and check_credit_rules:
+        results = list(check_credit_rules.values())
+
+        if all(value == "acceptable" for value in results):
+            risk_level = "Low"
+        elif any(value in ("weak", "high") for value in results):
+            risk_level = "High"
+        else:
+            risk_level = "Medium"
+    else:
+        risk_level = "Medium"
+
+    return {
+        "risk_level": risk_level,
+        "source": "credit_rules"
+    }
 
 
 def get_company_memory(company_name):
@@ -65,13 +80,17 @@ def generate_credit_answer(
 # Full Pipeline Orchestrator
 # ==================================================
 
-def run_credit_analysis(company_name, conversation_manager):
+def run_credit_analysis(
+    company_name,
+    conversation_manager,
+    run_id=None,
+    allow_persistence=False
+):
     """
-    Execute complete credit analysis pipeline
-    and store conversation context.
+    اجرای کامل پایپ‌لاین اعتبارسنجی بدون ذخیره‌سازی مستقیم در حافظه.
+    نتیجه شامل داده‌های تحلیلی، خروجی موتور قواعد و پیشنهاد ذخیره‌سازی است.
     """
 
-    # منبع مشترک، همیشه در همان ابتدای تابع و بدون قید‌وشرط ساخته می‌شود
     memory_manager = MemoryManager()
 
     company_data = load_company_context(company_name)
@@ -80,38 +99,31 @@ def run_credit_analysis(company_name, conversation_manager):
 
     rule_result = check_credit_rules(analysis)
 
+    risk_evaluation = evaluate_risk(rule_result)
+
     previous_memory = memory_manager.get_latest_memory_summary(company_name)
 
     report = generate_credit_answer(
         company_name=company_name,
         review_financial_analysis=analysis,
         check_credit_rules=rule_result,
-        get_company_memory=previous_memory
-    )
-
-    memory_content = {
-        "company": company_name,
-        "decision": report["decision"],
-        "risk_level": report["risk_level"],
-        "summary": report["executive_summary"],
-        "key_risks": report["weaknesses"],
-        "recommendations": report["recommendations"]
-    }
-
-    memory_manager.save_memory(
-        company_name,
-        "credit_analysis",
-        json.dumps(memory_content, ensure_ascii=False)
+        get_company_memory=previous_memory,
+        evaluate_risk=risk_evaluation
     )
 
     conversation_manager.save_context(
         company_name,
         analysis,
         rule_result,
-        report
+        report,
+        risk_evaluation=risk_evaluation
     )
 
     return {
         "analysis": analysis,
-        "report": report
+        "report": report,
+        "rule_result": rule_result,
+        "risk_evaluation": risk_evaluation,
+        "previous_memory": previous_memory,
+        "run_id": run_id
     }

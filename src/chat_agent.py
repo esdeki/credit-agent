@@ -97,7 +97,8 @@ def create_chat_response(
     if reasoning_result["plan"]["use_knowledge_base"]:
         external_documents = (
             knowledge_manager.get_relevant_documents(
-                question
+                question,
+                company_name=context.get("company")
             )
         )
     else:

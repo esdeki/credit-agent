@@ -12,7 +12,8 @@ class ConversationManager:
         company,
         analysis,
         rule_result,
-        report
+        report,
+        risk_evaluation=None
     ):
         """
         Save the latest company analysis context.
@@ -22,7 +23,8 @@ class ConversationManager:
             "company": company,
             "analysis": analysis,
             "rule_result": rule_result,
-            "report": report
+            "report": report,
+            "risk_evaluation": risk_evaluation
         }
 
     def get_context(self):

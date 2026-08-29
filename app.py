@@ -1571,7 +1571,12 @@ if analyze_clicked and company_name:
 
     with st.spinner("در حال تحلیل صورت‌های مالی و تدوین گزارش اعتباری…"):
         try:
-            result = run_credit_analysis(company_name, conversation_manager)
+            result = run_credit_analysis(
+                company_name,
+                conversation_manager,
+                run_id=st.session_state.run_id,
+                allow_persistence=False,
+            )
 
         except CompanyNotFoundError as error:
             st.error(
