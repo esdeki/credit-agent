@@ -38,7 +38,8 @@ def analyze_company(company_data):
         return {}
 
     if "Period_Date" in company_data.columns:
-        filtered = company_data[company_data["Period_Date"].apply(_is_valid_period)]
+        filtered = company_data[company_data["Period_Date"].apply(
+            _is_valid_period)]
     else:
         filtered = company_data.copy()
 
@@ -49,3 +50,14 @@ def analyze_company(company_data):
     }
 
     return {k: v for k, v in ratios.items() if v is not None}
+
+
+"""
+با استفاده از تابع _safe_mean میانگین ۳ شاخص بسیار حیاتی مالی را محاسبه می‌کند:
+
+Current_Ratio (نسبت جاری): توانایی شرکت در پرداخت دیون کوتاه مدت.
+
+Quick_Ratio (نسبت سریع): نقدشوندگی سریع شرکت بدون احتساب موجودی کالا.
+
+Debt_Ratio (نسبت بدهی): میزان وابستگی دارایی‌های شرکت به بدهی‌ها.
+"""
